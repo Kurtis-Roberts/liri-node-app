@@ -6,7 +6,7 @@ var config = require("./keys.js");
 var textFile = ("./random.txt")
 
 var command = process.argv[2];
-
+var artistArray = [];
 // console.log(command)
 
 function getTweets() {
@@ -64,58 +64,86 @@ function getTweets() {
 
 }
 
+
+
+
 function getSpotify() {
     var spotifyClientId = config.spotifyKeys.Client_ID
     var spotifyClientSecret = config.spotifyKeys.Client_Secret
+
+    var artistArray = [];
 
     var client = new Spotify({
         id: spotifyClientId,
         secret: spotifyClientSecret,
     });
 
-    var inputSong = process.argv[3];
-    if (process.argv[3] === undefined || process.argv[3] === " ") {
-        inputSong = "The Sign";
+    var inputSong;
+    if (process.argv.length > 4) {
+        inputSong = process.argv.slice(3).join(" ")
     } else {
-        inputSong = process.argv[3];
+        if (process.argv[3] === undefined || process.argv[3] === " ") {
+            inputSong = "The Sign";
+        } else {
+            inputSong = process.argv[3]
+        }
     }
-
-
+    var inputSong = inputSong.replace(/\s/g, "+");
 
     client.search({ type: 'track', query: inputSong }, function(err, data) {
         if (err) {
             return console.log('Error occurred: ' + err);
         }
 
-        if (inputSong === "The Sign") {
-            /////////// ARTIST ///////////////////////
-            console.log("Artist(s) Name: " + data.tracks.items[8].artists[0].name)
-                /////////////// SONG ///////////////////////
-            console.log("Song Name: " + data.tracks.items[8].name)
-                /////////////// PREVIEW ////////////////////
-            console.log("Song Preview URL: " + data.tracks.items[8].preview_url)
-                /////////////// ALBUM //////////////////////
-            console.log("Album Name: " + data.tracks.items[8].album.name)
+        for (i = 0; i < data.tracks.items.length; i++) {
+            artistArray.push(data.tracks.items[i].artists[0].name)
 
-            console.log("======================================")
+            artistArray = artistArray.filter(function(item, index, inputArray) {
+                return inputArray.indexOf(item) == index;
+
+            });
 
 
-        } else {
-            /////////// ARTIST ///////////////////////
-            console.log("Artist(s) Name: " + data.tracks.items[0].artists[0].name)
-                /////////////// SONG ///////////////////////
-            console.log("Song Name: " + data.tracks.items[0].name)
-                /////////////// PREVIEW ////////////////////
-            console.log("Song Preview URL: " + data.tracks.items[0].preview_url)
-                /////////////// ALBUM //////////////////////
-            console.log("Album Name: " + data.tracks.items[0].album.name)
+            if (process.argv[3] === undefined || process.argv[3] === " ") {
+                inputSong = "The Sign";
 
-            console.log("======================================")
+                /////////// ARTIST ///////////////////////
+                console.log("ARTIST(S) NAME: " + data.tracks.items[8].artists[0].name)
+                    /////////////// SONG ///////////////////////
+                console.log("SONG NAME: " + data.tracks.items[8].name)
+                    /////////////// PREVIEW ////////////////////
+                console.log("SONG PREVIEW URL: " + data.tracks.items[8].preview_url)
+                    /////////////// ALBUM //////////////////////
+                console.log("ALBUM NAME: " + data.tracks.items[8].album.name)
+                console.log("\n")
+                console.log("======================================")
+
+
+            } else {
+
+                console.log("\n")
+                    /////////// ARTIST ///////////////////////
+                console.log("ARTIST(S) NAME: " + artistArray)
+                    /////////////// SONG ///////////////////////
+                console.log("SONG NAME: " + data.tracks.items[0].name)
+                    /////////////// PREVIEW ////////////////////
+                console.log("SONG PREVIEW URL: " + data.tracks.items[0].preview_url)
+                    /////////////// ALBUM //////////////////////
+                console.log("ALBUM NAME: " + data.tracks.items[0].album.name)
+                console.log("\n")
+                console.log("======================================")
+
+            }
 
         }
 
-    });
-};
+    })
+
+
+}
+
+
+
 
 function getMovie() {
     var token = config.movieKeys.token;
@@ -129,22 +157,26 @@ function getMovie() {
     var getMovie = { url: "https://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=" + token, method: "GET" }
 
     request(getMovie, function(error, response, body) {
+
         var response = JSON.parse(body)
-        console.log("Movie Title: " + response.Title)
-        console.log("Year Released: " + response.Year)
-        console.log("Movie Rated: " + response.Rated)
-        console.log("Country Where Movie Was Produced: " + response.Country)
-        console.log("Language: " + response.Language)
-        console.log("Movie Plot: " + response.Plot)
-        console.log("Main Actors: " + response.Actors)
+        console.log("\n")
+        console.log("MOVIE TITLE: " + response.Title)
+        console.log("YEAR RELEASED: " + response.Year)
+        console.log("MOVIE RATED: " + response.Rated)
+        console.log("COUNTRY WHERE MOVIE WAS PRODUCED: " + response.Country)
+        console.log("LANGUAGE: " + response.Language)
+        console.log("MOVIE PLOT: " + response.Plot)
+        console.log("MAIN ACTORS: " + response.Actors)
+        console.log("\n")
+        console.log("===========================================")
     })
 };
 
 function doWhatItSays() {
     fs.readFile(textFile, "utf8", function(error, data) {
-        console.log(data)
+        // console.log(data)
         var dataArray = data.split(",");
-        console.log(dataArray)
+        // console.log(dataArray)
 
         if (dataArray[0] === "spotify-this-song") {
             var spotifyClientId = config.spotifyKeys.Client_ID
@@ -157,46 +189,43 @@ function doWhatItSays() {
 
             var inputSong = dataArray[1];
 
-
-
-
             client.search({ type: 'track', query: inputSong }, function(err, data) {
                 if (err) {
                     return console.log('Error occurred: ' + err);
                 }
 
                 if (inputSong === "The Sign") {
-
-                    /////////// ARTIST ///////////////////////
-                    console.log("Artist(s) Name: " + data.tracks.items[8].artists[0].name)
+                    console.log("\n")
+                        /////////// ARTIST ///////////////////////
+                    console.log("ARTIST(S) NAME: " + data.tracks.items[8].artists[0].name)
                         /////////////// SONG ///////////////////////
-                    console.log("Song Name: " + data.tracks.items[8].name)
+                    console.log("SONG NAME: " + data.tracks.items[8].name)
                         /////////////// PREVIEW ////////////////////
-                    console.log("Song Preview URL: " + data.tracks.items[8].preview_url)
+                    console.log("SONG PREVIEW URL: " + data.tracks.items[8].preview_url)
                         /////////////// ALBUM //////////////////////
-                    console.log("Album Name: " + data.tracks.items[8].album.name)
-
+                    console.log("ALBUM NAME: " + data.tracks.items[8].album.name)
+                    console.log("\n")
                     console.log("======================================")
 
-
                 } else {
-                    /////////// ARTIST ///////////////////////
-                    console.log("Artist(s) Name: " + data.tracks.items[0].artists[0].name)
+                    console.log("\n")
+                        /////////// ARTIST ///////////////////////
+                    console.log("ARTIST(S) NAME: " + data.tracks.items[0].artists[0].name)
                         /////////////// SONG ///////////////////////
-                    console.log("Song Name: " + data.tracks.items[0].name)
+                    console.log("SONG NAME: " + data.tracks.items[0].name)
                         /////////////// PREVIEW ////////////////////
-                    console.log("Song Preview URL: " + data.tracks.items[0].preview_url)
+                    console.log("SONG PREVIEW URL: " + data.tracks.items[0].preview_url)
                         /////////////// ALBUM //////////////////////
-                    console.log("Album Name: " + data.tracks.items[0].album.name)
-
+                    console.log("ALBUM NAME: " + data.tracks.items[0].album.name)
+                    console.log("\n")
                     console.log("======================================")
 
                 }
             });
+
         } else if (dataArray[0] === "movie-this") {
             var token = config.movieKeys.token;
             var movie = dataArray[1];
-
 
             var getMovie = { url: "https://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=" + token, method: "GET" }
 
@@ -205,13 +234,16 @@ function doWhatItSays() {
                     return console.log('Error occurred: ' + err);
                 }
                 var response = JSON.parse(body)
-                console.log("Movie Title: " + response.Title)
-                console.log("Year Released: " + response.Year)
-                console.log("Movie Rated: " + response.Rated)
-                console.log("Country Where Movie Was Produced: " + response.Country)
-                console.log("Language: " + response.Language)
-                console.log("Movie Plot: " + response.Plot)
-                console.log("Main Actors: " + response.Actors)
+                console.log("\n")
+                console.log("MOVIE TITLE: " + response.Title)
+                console.log("YEAR RELEASED: " + response.Year)
+                console.log("MOVE RATED: " + response.Rated)
+                console.log("COUNTRY WHERE MOVIE WAS PRODUCED: " + response.Country)
+                console.log("LANGUAGE: " + response.Language)
+                console.log("MOVIE PLOT: " + response.Plot)
+                console.log("MAIN ACTORS: " + response.Actors)
+                console.log("\n")
+                console.log("========================================")
             })
         }
     })
